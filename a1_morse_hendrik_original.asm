@@ -67,7 +67,9 @@ main:
 
 .data
 
-test_msg: .asciiz ".... .- .-.. .-.. ---"
+test_msg: .asciiz ".-- .. .--. ...  .. ... -  - --- .-.. .-.."
+# test_msg: .asciiz ".---- .-.-. .---- -...- ..---"
+# test_msg: .asciiz ".... .- .-.. .-.. ---"
 
 .text
 
@@ -80,7 +82,7 @@ morse:
 	
 
 	decodestep: 
-		lw		$t1, 0($t2)		# aktuelles Morsezeichen
+		lb		$t1, 0($t2)		# aktuelles Morsezeichen
 		beq		$t1, ' ', addLetter	# if $t1 == ' ' then goto addLetter
 		beq		$t1, '\0', endDecode	# if $t1 == '\0' then goto endDecode
 		beq		$t1, '-', Strich	# if $t1 == '-' then goto Strich
@@ -90,7 +92,7 @@ morse:
 		
 
 		iteration:
-			addi	$t2, $t2, 8			# $t2 = $t2 + 1
+			addi	$t2, $t2, 1			# $t2 = $t2 + 1
 			j		decodestep				# jump to decodestep
 			
 			
@@ -104,12 +106,19 @@ morse:
 
 	addLetter:
 		add		$t0, $t0, $a0		# $t0 = $t0 + $a0
-		lw		$t0, 0($t0)		# 
+		lb		$t0, 0($t0)		# 
 		add		$t4, $t3, $a2		# $t4 = $t3 + $v0		
-		sw		$t0, 0($t4)		# 
-		addi	$t3, $t3, 8			# $t3 = $t3 + 8		
+		sb		$t0, 0($t4)		# 
+		addi	$t3, $t3, 1			# $t3 = $t3 + 8		
 		li		$t0, 0		# $t0 = 0 - baumposition k
-		j		decodestep				# jump to decodestep
+		j		iteration				# jump to decodestep
 
 	endDecode:
+		add		$t0, $t0, $a0		# load current address of tree inplace
+		lb		$t0, 0($t0)			# load char from tree inplace
+		add		$t4, $t3, $a2		# load output arddress in t4
+		sb		$t0, 0($t4)			# save loaded char to t4
+		
+
+		addi $v0, $t3, 1 # set output to length of output string in bytes
 		jr $ra
